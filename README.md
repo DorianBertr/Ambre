@@ -1,0 +1,2 @@
+Prérequis :
+  pip install discord
