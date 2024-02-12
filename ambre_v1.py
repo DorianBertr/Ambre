@@ -7,7 +7,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Initialisation de l'id de l'admin
-admin="Admin ID"
+admin=0
 
 
 # Événement de connexion
