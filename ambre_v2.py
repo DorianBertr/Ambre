@@ -99,11 +99,7 @@ async def perms(ctx, member: discord.Member):
         for perm, value in role.permissions:
             if value is True:
                 if perm not in list_perms:
-                    list_perms.append(perm)
-                    
-    permissions_info=f"Permissions de {member.mention} :\n"
-    for perm in list_perms :
-        permissions_info+=f"    {perm}\n"
+                    permissions_info+=f"    {perm}\n"
 
     # Envoie les informations des permissions dans le canal où la commande a été utilisée
     await ctx.send(permissions_info)
