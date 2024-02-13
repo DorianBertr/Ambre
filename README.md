@@ -1,1 +1,5 @@
-Pas de modifications, juste de l'optimisation et de la mise en forme.
+Optimisation et mise en forme.
+
+Modification :
+
+Dans la commande !perms, les permissions sont désormais traduites.
