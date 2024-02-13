@@ -80,21 +80,32 @@ async def action(action, ctx, member, reason):
     fin=False
     if (await verif(member.id)==True) :
         # Vérifie si l'utilisateur a la permission de bannir des membres
-        autorisation=0
+        autorisation_bot=0
         if action=="kick":
-            autorisation=ctx.author.guild_permissions.kick_members
+            autorisation_bot=ctx.author.guild_permissions.kick_members
         else:
-            autorisation=ctx.author.guild_permissions.ban_members
-        if autorisation:
-            # Envoie un message privé à l'utilisateur
-            message=f"```ansi\n[2;31mVous avez été {action} du serveur {ctx.guild.name}"
-            if reason!=None:
-                message+=f" pour la raison suivante : {reason}"
-            message+="[0m```"
-            await member.send(message)
+            autorisation_bot=ctx.author.guild_permissions.ban_members
+        if autorisation_bot:
+            bot_top_role_position = member.guild.me.top_role.position
+            hierarchie=True
+            # Parcourt les rôles du membre
+            for role in member.roles:
+                # Vérifie si le rôle du membre a une position plus élevée que celui du bot
+                if role.position > bot_top_role_position:
+                    hierarchie=False
+            if hierarchie:
+                # Envoie un message privé à l'utilisateur
+                message=f"```ansi\n[2;31mVous avez été {action} du serveur {ctx.guild.name}"
+                if reason!=None:
+                    message+=f" pour la raison suivante : {reason}"
+                message+="[0m```"
+                await member.send(message)
 
-            message=f"> {member.name} a été {action} du serveur."
-            fin=True
+                message=f"> {member.name} a été {action} du serveur."
+                fin=True
+            else:
+                message=f"```ansi\n[2;31m[2;33mDésolé, je ne peux pas {action} un membre qui m'est hiérarchiquement supérieur.[0m[2;31m[0m```"
+                fin=False
         else:
             message=f"```ansi\n[2;31m[2;33mDésolé, vous n'avez pas la permission de {action} des membres.[0m[2;31m[0m```"
     else :
