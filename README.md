@@ -25,10 +25,10 @@ Commandes disponibles :
     !status [lien du site] (optionnel si vous voulez vérifier qu'un site)
       Permet de vérifier si le site est en ligne.
 
-    !infos
+    !inf
       Permet d'obtenir les informations sur le bot.
   
-    !help
+    !he
       Pas besoin d'expliquer je pense.
     
 
