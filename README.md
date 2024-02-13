@@ -1,2 +1,2 @@
-Prérequis :
-  pip install discord
+Le main sert de cloud !
+Allez voir les autres versions.
