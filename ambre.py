@@ -9,8 +9,6 @@ bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
 
 # Initialisation de l'id de l'admin
 admin=0
-# Initialisation du code de sécurité
-code_secu=str(uuid.uuid4())
 # Stocke le moment du démarrage du bot
 start_time = time.time()
 
@@ -23,7 +21,7 @@ async def on_ready():
     
     user = await bot.fetch_user(admin)
     # Envoie un message privé à l'utilisateur
-    await user.send(f"Bonjour Administrateur {user.mention}, je suis connecté en tant que {nom} !\nCode de sécurité : {code_secu}")
+    await user.send(f"Bonjour Administrateur {user.mention}, je suis connecté en tant que {nom} !")
 
 
 # Définition de la fonction verif
