@@ -5,9 +5,9 @@ Prérequis :
 
 La variable admin qui est par default à 0 doit être remplacé par l'ID d'utilisateur (peut rester à 0), elle protège l'utilisateur des bans et kicks.
 
-Commandes disponibles :\n
-  !perms @user
-    Renvoie distinctement la liste des permissions d'un user.
+Commandes disponibles :
+	!perms @user
+		Renvoie distinctement la liste des permissions d'un user.
 
   !ban @user [raison]
     Ban l'user mentionné et possible de rajouter une raison.
