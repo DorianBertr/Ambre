@@ -1,4 +1,5 @@
 import discord, requests, time, datetime
+from mtranslate import translate
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
@@ -66,8 +67,8 @@ async def perms(ctx, member: discord.Member):
                 if perm not in list_perms:
                     list_perms.append(perm)
                     new_perm = perm.replace("_", " ")
-                    # perm_trad = traducteur.translate(new_perm, dest='fr').text
-                    embed.add_field(name=new_perm, value="", inline=False)  
+                    perm_trad = translate(new_perm, 'fr')
+                    embed.add_field(name=perm_trad[0].upper()+perm_trad[1:], value="", inline=False)
     # Envoie les informations des permissions dans le canal où la commande a été utilisée
     await ctx.send(embed=embed)
 
