@@ -1,4 +1,5 @@
 Prérequis :
+
 pip install discord
 
 
