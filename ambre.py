@@ -8,7 +8,6 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Initialisation de l'id de l'admin
 admin=0
-code_secu=str(uuid.uuid4())
 
 
 # Événement de connexion
