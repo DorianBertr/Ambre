@@ -27,7 +27,7 @@ Commandes disponibles :
 
     !infos
       Permet d'obtenir les informations sur le bot.
-
+  
     !help
       Pas besoin d'expliquer je pense.
     
