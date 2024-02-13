@@ -24,29 +24,30 @@ async def on_ready():
     await user.send(f"Bonjour Administrateur {user.mention}, je suis connecté en tant que {nom} !\nCode de sécurité : {code_secu}")
 
 
-@bot.command()
+@bot.command(description="Obtenir la liste des scans sur le site WEB local.")
 async def scans(ctx):
     # Supprime le message contenant la commande utilisée
     await ctx.message.delete()
     # Chemin du dossier à parcourir
     mangas_path = './mangas'
-    message="```ansi\n"
-    message+=f"[2;34m[2;36m[4;36m[1;36m{len(os.listdir(mangas_path))} scans disponibles :[0m[4;36m[0m[2;36m[0m[2;34m[0m\n"
+    #Créé l'embed
+    embed = discord.Embed(title=f"{len(os.listdir(mangas_path))} scans disponibles", color=discord.Color.random())
+    
     # Parcourt tous les dossiers dans le dossier spécifié
     for manga in os.listdir(mangas_path):
-        message+=f"    [2;31m[2;32m[1;32m{manga} :[0m[2;32m[0m[2;31m[0m\n"
         # Chemin complet du dossier
         manga_path = os.path.join(mangas_path, manga)
-        message+=f"        [2;34m{len(os.listdir(manga_path))} chapitres.\n"
+        #Créé le message d'infos du manga
+        message=f"{len(os.listdir(manga_path))} chapitres.\n"
+        #Fait la moyenne
         nb_img=0
         for chapter in os.listdir(manga_path):
             chapter_path=os.path.join(manga_path, chapter)
             nb_img+=len(os.listdir(chapter_path))
         moy_img=nb_img/len(os.listdir(manga_path)) 
-        message+=f"        Moyenne de {math.floor(moy_img)} slides par chapitre.[0m\n"
-    message+="```"
-        
-    await ctx.send(message)
+        message+=f"Moyenne de {math.floor(moy_img)} slides par chapitre."
+        embed.add_field(name=manga, value=message, inline=False)
+    await ctx.send(embed=embed)
 
 
 @bot.command(description="Obtenir le status du site WEB local.")
@@ -77,9 +78,9 @@ async def status(ctx):
     # Envoie l'embed dans le canal où la commande a été lancée
     await ctx.send(embed=embed)
 
+
 # Stocke le moment du démarrage du bot
 start_time = time.time()
-
 @bot.command(description="Obtenir les informations du bot.")
 async def infos(ctx):
     # Supprime le message contenant la commande utilisée
@@ -95,6 +96,7 @@ async def infos(ctx):
     embed.add_field(name="Nombre d'utilisateurs", value=sum(len(guild.members) for guild in bot.guilds), inline=False)
     # Envoie l'embed dans le canal où la commande a été lancée
     await ctx.send(embed=embed)
+
 
 @bot.command(description="Obtenir la liste des commandes utilisables.")
 async def help(ctx):
