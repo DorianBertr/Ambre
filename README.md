@@ -25,11 +25,4 @@ Commandes disponibles :
     !status [lien du site] (optionnel si vous voulez vérifier qu'un site)
       Permet de vérifier si le site est en ligne.
 
-    !inf
-      Permet d'obtenir les informations sur le bot.
-  
-    !he
-      Pas besoin d'expliquer je pense.
-    
-
   *Les messages de commandes sont automatiquement supprimés par le bot.
