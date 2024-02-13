@@ -49,27 +49,12 @@ async def annonce(member, serveur, action, valid, raison=None):
     # Envoie un message privé à l'admin    
     await user.send(message)
 
-
-@bot.command()
-async def membres(ctx):
-    # Supprime le message contenant la commande utilisée
-    await ctx.message.delete()
-    # Récupère la liste des membres du serveur
-    members = ctx.guild.members
-    # Crée une chaîne pour stocker les noms des membres
-    members_list = ""
-    # Parcours la liste des membres et ajoute leur nom à la chaîne
-    for member in members:
-        members_list += f"{member.name}\n"
-    # Envoie la liste des membres dans le canal où la commande a été lancée
-    await ctx.send(members_list)
-
 @bot.command(description="Liste les permissions de l'user mentionné. !perms @user")
 async def perms(ctx, member: discord.Member):
     # Supprime le message contenant la commande utilisée
     await ctx.message.delete()
-    # Crée une chaîne pour stocker les informations des permissions
-    permissions_info=f"Permissions de {member.mention} :\n\n"
+    # Crée une embed pour stocker les informations des permissions
+    embed = discord.Embed(title=f"Permissions de {member.name}", color = discord.Color.teal())
     list_perms=[]
     # Pour chaque rôle de l'utilisateur
     for role in member.roles:
@@ -77,9 +62,11 @@ async def perms(ctx, member: discord.Member):
         for perm, value in role.permissions:
             if value is True:
                 if perm not in list_perms:
-                    permissions_info+=f"    {perm}\n"
+                    list_perms.append(perm)
+                    new_perm = perm.replace("_", " ")
+                    embed.add_field(name=new_perm, value="", inline=False)
     # Envoie les informations des permissions dans le canal où la commande a été utilisée
-    await ctx.send(permissions_info)
+    await ctx.send(embed=embed)
 
 @bot.command(description="Ban l'user mentionné. !ban @user [raison](optionnel)")
 async def ban(ctx, member: discord.Member, *, reason=None):
