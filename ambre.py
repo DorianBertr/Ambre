@@ -1,6 +1,8 @@
 import uuid
 import os
 import math
+import requests
+from bs4 import BeautifulSoup
 import discord
 from discord.ext import commands
 
@@ -53,6 +55,35 @@ async def scans(ctx):
     message+="```"
         
     await ctx.send(message)
+
+
+@bot.command()
+async def status(ctx):
+    # Supprime le message contenant la commande utilisée
+    await ctx.message.delete()
+    
+    message="```ansi\n"
+    try:
+        # Effectuer une requête GET pour obtenir le contenu de la page
+        response = requests.get('http://localhost/')
+            
+        # Vérifier si la requête a réussi
+        if response.status_code == 200:
+            # Utiliser BeautifulSoup pour analyser le contenu HTML de la page
+            soup = BeautifulSoup(response.content, 'html.parser')
+                    
+            # Récupérer le titre de la page
+            title = soup.title.string
+                    
+            # Afficher le titre de la page
+            message+=f"[2;32mLe site {title} est en ligne localement ![0m\n```"
+            await ctx.send(message)
+        else:
+            message+=f"[2;32m[2;31mImpossible de récupérer le titre du site. Code de statut : {response.status_code}[0m[2;32m[0m\n```"
+            await ctx.send(message)
+    except requests.ConnectionError:
+        message+="[2;32m[2;31mImpossible de se connecter au site ![0m[2;32m[0m\n```"
+        await ctx.send(message)
 
 
 
