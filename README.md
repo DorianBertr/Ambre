@@ -10,6 +10,14 @@ pip install mtranslate
 
 La variable admin qui est par default à 0 doit être remplacé par l'ID d'utilisateur (peut rester à 0), elle protège l'utilisateur des bans et kicks.
 
+Ajouts :
+
+Groupes de commandes visibles avec !help.
+
+!clear [nombre] Supprime les X derniers messages.
+
+!p4 Joue au Puissance 4 avec un bot. !!! Les grilles sont lentes à s'afficher donc attendez la question du bot.
+
 Commandes disponibles :
 
 !perms @user Renvoie distinctement la liste des permissions d'un user.
