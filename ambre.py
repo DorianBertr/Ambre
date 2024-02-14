@@ -34,19 +34,6 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
-@bot.command(description="Supprime les X derniers messages. !clear [nombre de messages à supprimer]")
-async def clear(ctx, amount: int):
-    # Supprime le message de la commande
-    await ctx.message.delete()
-    
-    # Vérifie si l'utilisateur a la permission de gérer les messages
-    if ctx.author.guild_permissions.manage_messages:
-        # Supprime les X derniers messages dans le canal
-        await ctx.channel.purge(limit=amount)
-        await ctx.send(f"{amount} messages ont été supprimés.")
-    else:
-        await ctx.send("Désolé, vous n'avez pas la permission nécessaire pour supprimer des messages.")
-
 
 
 
@@ -294,16 +281,7 @@ async def p4(ctx):
 
 
 
-# Créez un groupe de commandes nommé "jeux"
-@bot.group(description="Liste tout les jeux disponibles.")
-async def jeux(ctx):
-    if ctx.invoked_subcommand is None:
-        await ctx.send('Veuillez spécifier une sous-commande pour le groupe "jeux".')
 
-
-@jeux.command(description="Jouer au Puissance 4 contre un bot.")
-async def p4(ctx):
-    pass
 
 
 # Créez un groupe de commandes nommé "manage"
@@ -315,67 +293,6 @@ async def man(ctx):
     if ctx.invoked_subcommand is None:
         embed.add_field(name='Veuillez spécifier une sous-commande pour le groupe "Management".', value="!man [nom de la sous-commande]", inline=False)
     await ctx.send(embed=embed)
-
-
-@man.command(description="Supprime les X derniers messages. !clear [nombre de messages à supprimer]")
-async def clear(ctx, amount: int):
-    pass
-
-@man.command(description="Renomme l'user mentionné. !nick @user [surnom]")
-async def nick(ctx, member: discord.Member, *, nickname):
-    pass
-
-
-# Créez un groupe de commandes nommé "moderation"
-@bot.group(description="Liste toutes les commandes de Modération.")
-async def mod(ctx):
-    if ctx.invoked_subcommand is None:
-        await ctx.send('Veuillez spécifier une sous-commande pour le groupe "mod".')
-
-
-@mod.command(description="Liste les permissions de l'user mentionné. !perms @user")
-async def perms(ctx, member: discord.Member):
-    pass
-
-@mod.command(description="Ban l'user mentionné. !ban @user [raison](optionnel)")
-async def ban(ctx, member: discord.Member, *, reason=None):
-    pass
-
-@mod.command(description="Kick l'user mentionné. !kick @user [raison](optionnel)")
-async def kick(ctx, member: discord.Member, *, reason=None):
-    pass
-
-
-# Créez un groupe de commandes nommé "site"
-@bot.group(description="Liste toutes les commandes du Site.")
-async def site(ctx):
-    if ctx.invoked_subcommand is None:
-        await ctx.send('Veuillez spécifier une sous-commande pour le groupe "site".')
-
-@site.command(description="Donne le status du site WEB local.")
-async def status(ctx, site=None):
-    pass
-
-# Créez un groupe de commandes nommé "autre"
-@bot.group(description="Liste toutes les autres commandes.")
-async def autre(ctx):
-    if ctx.invoked_subcommand is None:
-        await ctx.send('Veuillez spécifier une sous-commande pour le groupe "autre".')
-
-
-@autre.command(description="Fait parler le bot. !msg [message]")      
-async def msg(ctx, *, message):
-    pass
-
-@autre.command(description="Le bot mp l'user mentionné avec vottre message. !mp @user [message]")
-async def mp(ctx, member: discord.Member, *, message):
-    pass
-
-
-@bot.command(description="Obtenir les informations du bot.")
-async def infos(ctx):
-    pass
-
 
 
 
