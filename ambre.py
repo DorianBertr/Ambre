@@ -35,6 +35,24 @@ async def help(ctx):
 
 
 
+@bot.command(description="Supprime les X derniers messages. !clear [nombre de messages à supprimer]")
+async def clear(ctx, amount: int):
+    # Supprime le message de la commande
+    await ctx.message.delete()
+    
+    # Vérifie si l'utilisateur a la permission de gérer les messages
+    if ctx.author.guild_permissions.manage_messages:
+        # Supprime les X derniers messages dans le canal
+        await ctx.channel.purge(limit=amount)
+        await ctx.send(f"{amount} messages ont été supprimés.")
+    else:
+        await ctx.send("Désolé, vous n'avez pas la permission nécessaire pour supprimer des messages.")
+
+
+
+
+
+
 async def creer_grille(vide):
     possibilites=[" ","X","O"]
     #6 lignes, 7 colonnes imposés
