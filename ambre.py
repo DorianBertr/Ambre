@@ -34,7 +34,6 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
-
 @bot.command(description="Supprime les X derniers messages. !clear [nombre de messages à supprimer]")
 async def clear(ctx, amount: int):
     # Supprime le message de la commande
@@ -255,13 +254,14 @@ async def ordi_joue(nb_tours, ctx, grille):
         
 
 
+# Créez un groupe de commandes nommé "jeux"
+@bot.group()
+async def jeux(ctx):
+    if ctx.invoked_subcommand is None:
+        await ctx.send('Veuillez spécifier une sous-commande pour le groupe "jeux".')
 
 
-
-
-
-
-@bot.command(description="Jouer au Puissance 4 contre un bot.")
+@jeux.command(description="Jouer au Puissance 4 contre un bot.")
 async def p4(ctx):
     #test de la fonction
     grille_jeu = await creer_grille(True)
