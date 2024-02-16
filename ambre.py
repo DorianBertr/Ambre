@@ -72,7 +72,8 @@ async def helping(ctx, grp, mode):
 # Créez un groupe de commandes nommé "Gestion"
 @bot.group(description="Liste toutes les commandes de Gestion.")
 async def gest(ctx):
-    await helping(ctx, gest, 0)
+    if ctx.invoked_subcommand is None:
+        await helping(ctx, gest, 0)
 
 @gest.command(description=f"Supprime les X derniers messages. {prefix}gest clear [nombre de messages à supprimer]")
 async def clear(ctx, amount: int):
@@ -99,7 +100,8 @@ async def nick(ctx, member: discord.Member, *, nickname):
 # Créez un groupe de commandes nommé "moderation"
 @bot.group(description="Liste toutes les commandes de Modération.")
 async def mod(ctx):
-    await helping(ctx, mod, 0)
+    if ctx.invoked_subcommand is None:
+        await helping(ctx, mod, 0)
 
 @mod.command(description=f"Liste les permissions de l'user mentionné. {prefix}mod perms @user")
 async def perms(ctx, member: discord.Member):
@@ -178,7 +180,8 @@ async def kick(ctx, member: discord.Member, *, reason=None):
 # Créez un groupe de commandes nommé "autre"
 @bot.group(description="Liste toutes les autres commandes.")
 async def autre(ctx):
-    await helping(ctx, autre, 0)
+    if ctx.invoked_subcommand is None:
+        await helping(ctx, autre, 0)
 
 @autre.command(description=f"Fait parler le bot. {prefix}autre msg [message]")      
 async def msg(ctx, *, message):
@@ -198,7 +201,9 @@ async def mp(ctx, member: discord.Member, *, message):
 # Créez un groupe de commandes nommé "site"
 @bot.group(description="Liste toutes les commandes pour le Site.")
 async def site(ctx):
-    await helping(ctx, site, 0)
+    if ctx.invoked_subcommand is None:
+        await helping(ctx, site, 0)
+
 
 @site.command(description=f"Donne le status du site WEB. {prefix}site status [https://...](optionnel)")
 async def status(ctx, site=None):
@@ -257,22 +262,22 @@ async def help(ctx):
     await helping(ctx, bot, 1)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Il est long pour afficher la grille !
 
 # Créez un groupe de commandes nommé "Jeux"
 @bot.group(description="Liste tout les jeux disponibles.")
 async def jeux(ctx):
-    await helping(ctx, jeux, 0)
+    if ctx.invoked_subcommand is None:
+        await helping(ctx, jeux, 0)
 
 async def creer_grille(vide):
-    possibilites=[" ","X","O"]
+    possibilites=["","X","O"]
     #6 lignes, 7 colonnes imposés
     grille=[]
     for i in range(6):
         ligne=[]
         for j in range(7):
             if vide==True :
-                case=" "
+                case=""
             else :
                 case=possibilites[randint(0,2)]
             ligne.append(case)
@@ -280,18 +285,33 @@ async def creer_grille(vide):
     return grille
 
 async def affiche_grille(ctx, grille):
+    message="```ansi\n"
+    message+="[2;31m[2;34mVous[0m[2;31m[0m\n[2;31mBot[0m\n\n"
     liste_chiffres_col =[str(i) for i in range(1,8)]
-    await ctx.send(" "+" " . join (liste_chiffres_col)+" ")
-    for ligne in grille :
-        await ctx.send("|"+"|".join(ligne)+"|")
-        await ctx.send("-"*(15))
+    for num in liste_chiffres_col:
+        message+=f"  {num} "
+    message+="\n"
+    for i, ligne in enumerate(grille) :
+        for z, char in enumerate(ligne):
+            if char=="X":
+                valeur=f"[2;31m[2;34m{char}[0m[2;31m[0m"
+            elif char=="O":
+                valeur=f"[2;31m{char}[0m"
+            else:
+                valeur=" "
+            message+=f"| {valeur} "
+        message+="|\n"
+        for _ in range(30):
+            message+="-"
+        message+="\n"
+    await ctx.send(message+"```")
         
 async def placer_pion(num_col, type_pion, grille ):  #num_col entre 1 et 7
-    if grille[0][num_col-1] != " ":
+    if grille[0][num_col-1] != "":
         #Cas où la colonne est pleine...
         return (grille, False)
     for num_ligne in range(5,-1,-1):
-        if grille[num_ligne][num_col-1]==" ":
+        if grille[num_ligne][num_col-1]=="":
             #on peut placer le pion
             grille[num_ligne][num_col-1]=type_pion
             return (grille,True)
@@ -375,13 +395,12 @@ async def joueur_joue(ctx, grille):
                     await ctx.send(f"Vous avez choisi : {reponse} !")
             except asyncio.TimeoutError:
                 await ctx.send("Désolé, vous n'avez pas répondu à temps.")
-                
+
             num_col=int(reponse)
-            if num_col >=1 and num_col <= 7 :
+            if 1 <= num_col <= 7:
                 #numéro de colonne OK
                 grille, ok=await placer_pion(num_col,"X",grille)  # type: ignore
                 if ok==True :
-                    await affiche_grille(ctx, grille)
                     return True, grille
                 else :
                     num_col_possibles.remove(num_col)
@@ -389,8 +408,6 @@ async def joueur_joue(ctx, grille):
                         #Le joueur ne peut plus jouer : égalité
                         return False, grille
                     await ctx.send("La colonne choisie est pleine, réessayez")
-            else :
-                await ctx.send("Vous devez saisir un chiffre entre 1 et 7 ...")    
         except:
             await ctx.send("Vous devez saisir un chiffre entre 1 et 7 ...")
 
@@ -406,9 +423,9 @@ async def copie_liste(liste_de_listes) :
 async def ordi_joue(nb_tours, ctx, grille):
     #Opération spéciale du 1er tour
     if nb_tours==2 :
-        if grille[5][3]==" ":
+        if grille[5][3]=="":
             num_col=4
-        elif grille[5][2]==" ":
+        elif grille[5][2]=="":
             num_col=3
         grille, ok=await placer_pion(num_col,"O",grille)  # type: ignore
         await affiche_grille(ctx, grille)
