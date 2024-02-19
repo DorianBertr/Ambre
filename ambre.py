@@ -269,243 +269,270 @@ async def jeux(ctx):
     if ctx.invoked_subcommand is None:
         await helping(ctx, jeux, 0)
 
-async def creer_grille(vide):
-    possibilites=["","X","O"]
-    #6 lignes, 7 colonnes imposés
-    grille=[]
-    for i in range(6):
-        ligne=[]
-        for j in range(7):
-            if vide==True :
-                case=""
-            else :
-                case=possibilites[randint(0,2)]
-            ligne.append(case)
-        grille.append(ligne)
-    return grille
-
-async def affiche_grille(ctx, grille):
+async def afficher_tableau(ctx, plateau, ennemi):
+    if ennemi:
+        adv=ennemi.name
+    else:
+        adv="I.A"
     message="```ansi\n"
-    message+="[2;31m[2;34mVous[0m[2;31m[0m\n[2;31mBot[0m\n\n"
-    liste_chiffres_col =[str(i) for i in range(1,8)]
-    for num in liste_chiffres_col:
-        message+=f"  {num} "
+    message+=f"[2;31m[2;34mVous[0m[2;31m[0m\n[2;31m{adv}[0m\n\n"
+    for num in range(7):
+        message+=f"  {num+1} "
     message+="\n"
-    for i, ligne in enumerate(grille) :
-        for z, char in enumerate(ligne):
+    for ligne in plateau :
+        for char in ligne :
             if char=="X":
                 valeur=f"[2;31m[2;34m{char}[0m[2;31m[0m"
             elif char=="O":
                 valeur=f"[2;31m{char}[0m"
             else:
-                valeur=" "
+                valeur=' '
             message+=f"| {valeur} "
         message+="|\n"
         for _ in range(30):
             message+="-"
         message+="\n"
-    await ctx.send(message+"```")
-        
-async def placer_pion(num_col, type_pion, grille ):  #num_col entre 1 et 7
-    if grille[0][num_col-1] != "":
-        #Cas où la colonne est pleine...
-        return (grille, False)
-    for num_ligne in range(5,-1,-1):
-        if grille[num_ligne][num_col-1]=="":
-            #on peut placer le pion
-            grille[num_ligne][num_col-1]=type_pion
-            return (grille,True)
+    message+="```"
+    await ctx.send(message)
 
-async def verif_vainqueur_ligne(grille):
-    for ligne in grille :
-        chaine_ligne="".join(ligne)
-        fin, symbole_vainqueur=await verif_4_alignes(chaine_ligne)
-        if fin==True :
-            return (True, symbole_vainqueur)
-    return (False,"")
+def placer_jeton(plateau, colonne, joueur):
+    for i in range(6 - 1, -1, -1):
+        if plateau[i][colonne] == ' ':
+            plateau[i][colonne] = joueur
+            return True
+    return False
 
-async def verif_vainqueur_colonne(grille):
-    #pour chaque colonne, construire chaine_col
-    for num_col in range(7):
-        chaine_col=""
-        for ligne in grille :
-            chaine_col=chaine_col+ligne[num_col]
-        fin, symbole_vainqueur=await verif_4_alignes(chaine_col)
-        if fin==True :
-            return (True, symbole_vainqueur)
-    return (False,"")
+def verifier_vict(plateau, joueur):
+    # Vérification horizontale
+    for i in range(6):
+        for j in range(7 - 3):
+            if all(plateau[i][j+k] == joueur for k in range(4)):
+                return True
+    # Vérification verticale
+    for i in range(6 - 3):
+        for j in range(7):
+            if all(plateau[i+k][j] == joueur for k in range(4)):
+                return True
+    # Vérification diagonale (descendante)
+    for i in range(6 - 3):
+        for j in range(7 - 3):
+            if all(plateau[i+k][j+k] == joueur for k in range(4)):
+                return True
+    # Vérification diagonale (montante)
+    for i in range(3, 6):
+        for j in range(7 - 3):
+            if all(plateau[i-k][j+k] == joueur for k in range(4)):
+                return True
+    return False
 
-async def verif_vainqueur_diag(grille):
-    for sens in (-1,1):
-        for b in range(3):
-            if b==0 :
-                borne_a=4
-            else :
-                borne_a=1
-            for a in range(borne_a):
-                i=0
-                j=0
-                chaine_diag=""
-                while i+b <=5 and j+a <= 6 :
-                    if sens==1 :
-                        chaine_diag=chaine_diag+grille[b+i][a+j]
-                    else :
-                        chaine_diag=chaine_diag+grille[b+i][6-(a+j)]
-                    i=i+1
-                    j=j+1
-                fin, symbole_vainqueur=await verif_4_alignes(chaine_diag)
-                if fin==True :
-                    return (True, symbole_vainqueur)
-    return (False,"")
-    
-async def verif_vainqueur_global(grille):
-    fin, vainqueur=await verif_vainqueur_ligne(grille)
-    if fin==True: 
-        return True,vainqueur
-    fin, vainqueur=await verif_vainqueur_colonne(grille)
-    if fin==True: 
-        return True, vainqueur
-    fin, vainqueur=await verif_vainqueur_diag(grille)
-    if fin==True: 
-        return True, vainqueur
-    return False,""
+def best_coup(plateau):
+    # Implémentation simplifiée pour l'IA (choix aléatoire de la colonne)
+    return np.random.randint(0, 7)
 
-async def verif_4_alignes(chaine):
-    if "XXXX" in chaine :
-        return (True, "X")
-    if "OOOO" in chaine :
-        return (True, "O")
-    return (False,"")
+def prochaine_ligne_disponible(plateau, col):
+    for i in range(6):
+        if plateau[i][col] == ' ':
+            return i
 
-async def joueur_joue(ctx, grille):
-    num_col_possibles=[i for i in range(1,8)]
-    while True :
-        try:
-            reponse=""
+async def jouer_puissance4(ctx, adversaire=None):
+    plateau = [[' '] * 7 for _ in range(6)]
+
+    tour = 1
+    while True:
+        if tour % 2 != 0:
+            joueur = ctx.author
+            jeton = 'X'
+        else:
+            joueur = adversaire if adversaire else ctx.guild.me
+            jeton = 'O'
+
+        if joueur == ctx.author or adversaire:
+            await afficher_tableau(ctx, plateau, adversaire)
             def check(message):
-                return message.author == ctx.author and message.channel == ctx.channel
+                return message.author == joueur and \
+                    message.channel == ctx.channel and \
+                    message.content.isdigit() and \
+                    0 <= int(message.content) - 1 < 7
+
+            await ctx.send(f"{joueur.mention}, c'est votre tour. Entrez le numéro de colonne (1-{7}):")
             try:
-                await ctx.send("Saisissez un chiffre entre 1 et 7 ... (Q pour quitter)")
-                response = await bot.wait_for('message', timeout=60.0, check=check)
-                reponse=response.content.upper()
-                if reponse=="Q":
-                    await ctx.send(f"Vous demandez à quittez la partie !")
-                    return True, "END"
-                else:
-                    await ctx.send(f"Vous avez choisi : {reponse} !")
+                col_msg = await ctx.bot.wait_for('message', timeout=60.0, check=check)
+                colonne = int(col_msg.content) - 1
             except asyncio.TimeoutError:
-                await ctx.send("Désolé, vous n'avez pas répondu à temps.")
+                await ctx.send(f"Le temps imparti pour votre coup est écoulé, {joueur.mention} ! La partie est terminée.")
+                return
+        else:
+            colonne = best_coup(plateau)
 
-            num_col=int(reponse)
-            if 1 <= num_col <= 7:
-                #numéro de colonne OK
-                grille, ok=await placer_pion(num_col,"X",grille)  # type: ignore
-                if ok==True :
-                    return True, grille
-                else :
-                    num_col_possibles.remove(num_col)
-                    if num_col_possibles==[] :
-                        #Le joueur ne peut plus jouer : égalité
-                        return False, grille
-                    await ctx.send("La colonne choisie est pleine, réessayez")
-        except:
-            await ctx.send("Vous devez saisir un chiffre entre 1 et 7 ...")
-
-async def copie_liste(liste_de_listes) :
-    copie_liste_de_listes=[]
-    for liste in liste_de_listes :
-        liste_copiee=[]
-        for element in liste:
-            liste_copiee.append(element)
-        copie_liste_de_listes.append(liste_copiee)    
-    return copie_liste_de_listes
-       
-async def ordi_joue(nb_tours, ctx, grille):
-    #Opération spéciale du 1er tour
-    if nb_tours==2 :
-        if grille[5][3]=="":
-            num_col=4
-        elif grille[5][2]=="":
-            num_col=3
-        grille, ok=await placer_pion(num_col,"O",grille)  # type: ignore
-        await affiche_grille(ctx, grille)
-        return True, grille     
-    
-    num_col_possibles=[i for i in range(1,8)]
-    for num_col in num_col_possibles :
-        grille_simu=await copie_liste(grille) #création d'une grille de simu copie de la grille de jeu
-        grille_simu, ok=await placer_pion(num_col,"O",grille_simu)  # type: ignore
-        if not ok :
-            num_col_possibles.remove(num_col)
-            if num_col_possibles==[]:
-                return False,grille
-        fin, vainqueur=await verif_vainqueur_global(grille_simu)
-        if fin== True :
-            #en jouant dans num_col, l'ordi va gagner : il va jouer là
-            grille, ok=await placer_pion(num_col,"O",grille)  # type: ignore
-            if ok==True :
-                await affiche_grille(ctx, grille)
-                return True, grille
-    #quelque soit la colonne où il jouera, l'ordi ne peut pas gagner au prochain tour
-    num_col_possibles=[i for i in range(1,8)]
-    shuffle(num_col_possibles)
-    for num_col in num_col_possibles :
-        joueur_peut_gagner=False
-        grille_simu=await copie_liste(grille)
-        grille_simu, ok=await placer_pion(num_col,"O",grille_simu)  # type: ignore
-        if not ok :
-            #num_col_possibles.remove(num_col)
+        if not placer_jeton(plateau, colonne, jeton):
+            await ctx.send("La colonne est pleine. Veuillez choisir une autre colonne.")
             continue
-        num_col_possibles_joueur=[i for i in range(1,8)]
-        for num_col_joueur in num_col_possibles_joueur:
-            grille_simu_joueur =await copie_liste(grille_simu)
-            grille_simu_joueur, ok=await placer_pion(num_col_joueur,"X",grille_simu_joueur)  # type: ignore
-            if not ok :
-                continue
-            fin, vainqueur=await verif_vainqueur_global(grille_simu_joueur)
-            if fin :
-                joueur_peut_gagner=True
-                break
-        if joueur_peut_gagner :
-            continue
-        #si l'ordi joue dans num_col, le joueur ne pourra pas gagner au prochain tour
-        grille, ok=await placer_pion(num_col,"O",grille)  # type: ignore
-        if ok==True :
-                await affiche_grille(ctx, grille)
-                return True, grille
-    #Il existe toujours une possibilité que le joueur gagne au prochain tour : on joue au hasard
-    grille, ok=await placer_pion(num_col_possibles[randint(0,len(num_col_possibles)-1)],"O",grille)  # type: ignore
-    if ok : 
-        await affiche_grille(ctx, grille)
-        return True, grille
 
-@jeux.command(description="Jouer au Puissance 4 contre un bot.")
-async def p4(ctx):
-    grille_jeu = await creer_grille(True)
-    peut_jouer=True
-    fin=False
-    joueur_en_cours="X"
-    nb_tours=0
-    while peut_jouer==True and fin==False :
-        nb_tours+=1
-        if joueur_en_cours=="X" :
-            peut_jouer, grille_jeu=await joueur_joue(ctx, grille_jeu)
-            if grille_jeu=="END":
-                peut_jouer=False
-                fin=grille_jeu
+        if verifier_vict(plateau, jeton):
+            await afficher_tableau(ctx, plateau, adversaire)
+            await ctx.send(f"Bravo {joueur.mention} ! Vous avez gagné la partie.")
+            return
+
+        if tour == 6 * 7:
+            await ctx.send("La partie est terminée. Match nul !")
+            await afficher_tableau(ctx, plateau, adversaire)
+            return
+
+        tour += 1
+
+@jeux.command(description=f"Jouer au puissance 4 contre un joueur ou un bot. {prefix}jeux p4 [@user](optionnel)")
+async def p4(ctx, adversaire: discord.Member = None):
+    await jouer_puissance4(ctx, adversaire if adversaire else None)
+
+
+async def afficher_plateau(ctx, plateau, ennemi):
+    if ennemi:
+        adv=ennemi.name
+    else:
+        adv="I.A"
+    message="```ansi\n"
+    message+=f"[2;31m[2;34m{ctx.author.name}[0m[2;31m[0m\n[2;31m{adv}[0m\n\n"
+    message+="  | 1 | 2 | 3 |\n"
+    message+="--------------\n"
+    for i, ligne in enumerate(plateau):
+        message+=f"{i+1}"
+        for col in ligne:
+            if col=="X":
+                valeur=f"[2;31m[2;34m{col}[0m[2;31m[0m"
+            elif col=="O":
+                valeur=f"[2;31m{col}[0m"
             else:
-                joueur_en_cours="O"
-        else : 
-            peut_jouer, grille_jeu=await ordi_joue(nb_tours, ctx, grille_jeu)  # type: ignore
-            joueur_en_cours="X"
-        if fin!="END":
-            fin, vainqueur=await verif_vainqueur_global(grille_jeu)
-    if fin==True :
-        await ctx.send(f"Le vainqueur est {vainqueur} en {nb_tours} coups !")
-    elif fin=="END" :
-        await ctx.send(f"Vous avez bien quittez la partie.")
+                valeur=" "
+            message+=f" | {valeur}"
+        message+=" |\n---------------\n"
+    await ctx.send(message+"```")
+
+def verifier_victoire(plateau, symbole):
+    # Vérifier les lignes
+    for ligne in plateau:
+        if all(case == symbole for case in ligne):
+            return True
+    # Vérifier les colonnes
+    for j in range(3):
+        if all(plateau[i][j] == symbole for i in range(3)):
+            return True
+    # Vérifier les diagonales
+    if all(plateau[i][i] == symbole for i in range(3)) or \
+        all(plateau[i][2-i] == symbole for i in range(3)):
+        return True
+    return False
+
+def est_match_nul(plateau):
+    return all(all(case != ' ' for case in ligne) for ligne in plateau)
+
+def minimax(plateau, profondeur, joueur):
+    if verifier_victoire(plateau, 'X'):
+        return -10
+    if verifier_victoire(plateau, 'O'):
+        return 10
+    if est_match_nul(plateau):
+        return 0
+    
+    if joueur == 'O':
+        meilleur_score = -math.inf
+        for i in range(3):
+            for j in range(3):
+                if plateau[i][j] == ' ':
+                    plateau[i][j] = joueur
+                    score = minimax(plateau, profondeur + 1, 'X')
+                    plateau[i][j] = ' '
+                    meilleur_score = max(score, meilleur_score)
+        return meilleur_score
+    else:
+        meilleur_score = math.inf
+        for i in range(3):
+            for j in range(3):
+                if plateau[i][j] == ' ':
+                    plateau[i][j] = joueur
+                    score = minimax(plateau, profondeur + 1, 'O')
+                    plateau[i][j] = ' '
+                    meilleur_score = min(score, meilleur_score)
+        return meilleur_score
+
+def meilleur_coup(plateau):
+    meilleur_score = -math.inf
+    meilleur_coup = None
+    for i in range(3):
+        for j in range(3):
+            if plateau[i][j] == ' ':
+                plateau[i][j] = 'O'
+                score = minimax(plateau, 0, 'X')
+                plateau[i][j] = ' '
+                if score > meilleur_score:
+                    meilleur_score = score
+                    meilleur_coup = (i, j)
+    return meilleur_coup
+
+async def joueur(ctx, plateau, joueur, adversaire):
+    def check(message):
+        return message.author == joueur and message.channel == ctx.channel
+    await afficher_plateau(ctx, plateau, adversaire)
+    while True:
+        try:
+            await ctx.send(f"{joueur.mention}, entrez votre coup (colonne.ligne) :")
+            response = await bot.wait_for('message', timeout=60.0, check=check)
+            coup_joueur = response.content
+
+            colonne, ligne = map(int, coup_joueur.split('.'))
+            if plateau[ligne-1][colonne-1] != ' ':
+                await ctx.send("Case déjà occupée, veuillez rejouer.")
+                continue
+            if joueur==ctx.author:
+                valeur='X'
+            else:
+                valeur='O'
+            plateau[ligne-1][colonne-1] = valeur
+            if verifier_victoire(plateau, valeur):
+                await afficher_plateau(ctx, plateau, adversaire)
+                await ctx.send(f"{joueur.mention}, vous avez gagné !")
+                return True
+            if est_match_nul(plateau):
+                await afficher_plateau(ctx, plateau, adversaire)
+                await ctx.send("Match nul !")
+                return True
+            return False
+        except (ValueError, IndexError):
+            await ctx.send("Coup invalide. Entrez votre coup dans le format 'colonne.ligne' (par exemple, 3.2).")
+
+async def jouer(ctx, adversaire):
+    plateau = [[' ']*3 for _ in range(3)]
+
+    if adversaire:
+        ennemi=adversaire
     else :
-        await ctx.send(f"Match nul, {nb_tours} coups réalisés !")
+        ennemi=False
+    while True:
+        victoire = await joueur(ctx, plateau, ctx.author, ennemi)
+        if victoire:
+            break
+
+        if adversaire:
+            victoire = await joueur(ctx, plateau, adversaire, ennemi)
+            if victoire:
+                break
+        else:
+            coup_ia = meilleur_coup(plateau)
+            plateau[coup_ia[0]][coup_ia[1]] = 'O'
+            if verifier_victoire(plateau, 'O'):
+                await afficher_plateau(ctx, plateau, adversaire)
+                await ctx.send("L'IA a gagné !")
+                break
+            if est_match_nul(plateau):
+                await afficher_plateau(ctx, plateau, adversaire)
+                await ctx.send("Match nul !")
+                break
+
+@jeux.command(description=f"Jouer au morpion contre un joueur ou un bot. {prefix}jeux morpion [@user](optionnel)")
+async def morpion(ctx, member: discord.Member=None):
+    if member == None:
+        await jouer(ctx, False)
+    else:
+        await jouer(ctx, member)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
