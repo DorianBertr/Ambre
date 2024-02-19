@@ -12,11 +12,11 @@ La variable admin qui est par default à 0 doit être remplacé par l'ID d'utili
 
 Ajouts :
 
-Groupes de commandes visibles avec !help.
+Vous pouvez désormais jouer avec un autre membre.
 
-!clear [nombre] Supprime les X derniers messages.
+!jeux morpion Joue au Morpion avec un bot.
 
-!p4 Joue au Puissance 4 avec un bot. !!! Les grilles sont lentes à s'afficher donc attendez la question du bot.
+
 
 Commandes disponibles :
 
@@ -35,5 +35,9 @@ Commandes disponibles :
 !infos Permet d'obtenir les informations sur le bot.
 
 !help Pas besoin d'expliquer je pense.
+
+!clear [nombre] Supprime les X derniers messages.
+
+!p4 Joue au Puissance 4 avec un bot. !!! Les grilles sont lentes à s'afficher donc attendez la question du bot.
 
 *Les messages de commandes sont automatiquement supprimés par le bot.
