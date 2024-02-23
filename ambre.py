@@ -34,6 +34,22 @@ async def help(ctx):
 
 
 
+intents.members = True
+@bot.command()
+async def membres(ctx):
+    # Vérifie si le bot a la permission de voir les membres
+    if ctx.guild.me.guild_permissions.view_audit_log:
+        # Récupère le serveur depuis le contexte
+        server = ctx.guild
+        # Récupère la liste des membres du serveur
+        members = server.members
+        # Itère sur la liste des membres et envoie leur nom dans le canal
+        for member in members:
+            await ctx.send(member.name)
+    else:
+        await ctx.send("Désolé, je n'ai pas la permission de voir les membres.")
+
+
 
 
 
