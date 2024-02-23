@@ -1,1 +1,1 @@
-C'est juste un cloud, allez voir la dernière version.
+Version actuelle du bot avec TOUTES les commandes.
