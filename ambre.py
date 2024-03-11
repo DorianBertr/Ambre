@@ -290,7 +290,7 @@ async def status(ctx, site=None):
     message=""
     try:
         # Effectuer une requête GET pour obtenir le contenu de la page
-        lien='http://192.168.1.152/'
+        lien='http://lien/'
         if site!=None:
             lien=site
         response = requests.get(lien)  
