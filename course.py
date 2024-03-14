@@ -12,7 +12,7 @@ intents.members = True
 bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
 
 # Initialisation de l'id de l'admin
-admin=385088777837871116
+admin=0
 
 
 
@@ -262,4 +262,4 @@ async def addObj(ctx, *, nom):
 
 
 # Exécution du bot avec le jeton Discord
-bot.run('MTIwNjg3NTI2Njk2NjYyNjMxNA.Gs5uKl.fS1nKQwRMv6zDLqEd7J4jL5zIESpHSNHNSdwT8')
+bot.run('')
