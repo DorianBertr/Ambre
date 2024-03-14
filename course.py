@@ -25,35 +25,6 @@ async def on_ready():
     print(f"Bonjour Administrateur {user.name}, je suis connecté en tant que {nom} !")
 
 
-async def verif(ctx):
-    id=ctx.author.id
-    query=f"select id_user from user where id_user={id};"
-    user = connection_list(query)
-    nom = await bot.fetch_user(id)
-    embed = discord.Embed(title=f'Profil de {nom.name}', color=discord.Color.dark_orange())
-    if len(user)==1:
-        return "profil_ok"
-    else :
-        embed.color = discord.Color.dark_orange()
-        embed.add_field(name=f'Vous ne possedez pas de profil.', value=f"Voulez-vous en créer un ? (y/n)", inline=False)
-        await ctx.send(embed=embed)
-
-        def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel
-        try:
-            reponse = await ctx.bot.wait_for('message', timeout=60.0, check=check)
-            if reponse.content.lower()=="y":
-                await ctx.send("```ansi\n[2;33mCréation en cours d'un profil...[0m```")
-                result=insertion(f"insert into user (id_user) values ({id});")
-                if result=="query_ok":
-                    await ctx.send("```ansi\n[2;32mCréation du profil réussi.[0m```")
-                    return "profil_ok"
-                else:
-                    await ctx.send("```ansi\n[2;31mÉchec lors de la création du profil ![0m```")
-        except asyncio.TimeoutError:
-            await ctx.send(f"```ansi[2;34mLe temps imparti pour agir est terminé ![0m```")
-    return "profil_fail"
-
     
 @bot.command(description="Obtenir la liste des commandes utilisables.")
 async def help(ctx):
@@ -69,14 +40,55 @@ async def help(ctx):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-@bot.command()
-async def profil(ctx):
+# Créez un groupe de commandes nommé "Course"
+@bot.group(description="Liste toutes les commandes de Course.")
+async def course(ctx):
+    # Supprime le message contenant la commande utilisée
+    await ctx.message.delete()
+    if ctx.invoked_subcommand is None:
+        await helping(ctx, course, 0)
+
+async def verif(ctx):
     id=ctx.author.id
     query=f"select id_user from user where id_user={id};"
     user = connection_list(query)
     nom = await bot.fetch_user(id)
     embed = discord.Embed(title=f'Profil de {nom.name}', color=discord.Color.dark_orange())
     if len(user)==1:
+        if user[0]!=nom.name:
+            result=insertion(f"update user set name='{nom.name}' where id_user={id};")
+        return "profil_ok"
+    else :
+        embed.color = discord.Color.dark_orange()
+        embed.add_field(name=f'Vous ne possedez pas de profil.', value=f"Voulez-vous en créer un ? (y/n)", inline=False)
+        await ctx.send(embed=embed)
+
+        def check(message):
+            return message.author == ctx.author and message.channel == ctx.channel
+        try:
+            reponse = await ctx.bot.wait_for('message', timeout=60.0, check=check)
+            if reponse.content.lower()=="y":
+                await ctx.send("```ansi\n[2;33mCréation en cours d'un profil...[0m```")
+                result=insertion(f"insert into user (id_user, name) values ({id}, {ctx.author.name});")
+                if result=="query_ok":
+                    await ctx.send("```ansi\n[2;32mCréation du profil réussi.[0m```")
+                    return "profil_ok"
+                else:
+                    await ctx.send("```ansi\n[2;31mÉchec lors de la création du profil ![0m```")
+        except asyncio.TimeoutError:
+            await ctx.send(f"```ansi[2;34mLe temps imparti pour agir est terminé ![0m```")
+    return "profil_fail"
+
+@course.command(description=f"Affiche votre profil ou vous en créer un. {prefix}course profil")
+async def profil(ctx):
+    id=ctx.author.id
+    query=f"select * from user where id_user={id};"
+    user = connection_list(query)
+    nom = await bot.fetch_user(id)
+    embed = discord.Embed(title=f'Profil de {nom.name}', color=discord.Color.dark_orange())
+    if len(user)==1:
+        if user[0][1]!=nom.name:
+            result=insertion(f"update user set name='{nom.name}' where id_user={id};")
         embed.color = discord.Color.blurple()
         # -----------------------------------------------------------------------------------------
         query_objs=f"select * from objectif where id_user={id} and actuel=1;"
@@ -113,7 +125,7 @@ async def profil(ctx):
             reponse = await ctx.bot.wait_for('message', timeout=60.0, check=check)
             if reponse.content.lower()=="y":
                 await ctx.send("```ansi\n[2;33mCréation en cours d'un profil...[0m```")
-                result=insertion(f"insert into user (id_user) values ({id});")
+                result=insertion(f"insert into user (id_user, name) values ({id}, {nom.name});")
                 if result=="query_ok":
                     await ctx.send("```ansi\n[2;32mCréation du profil réussi.[0m```")
                 else:
@@ -122,7 +134,7 @@ async def profil(ctx):
             await ctx.send(f"```ansi[2;34mLe temps imparti pour agir est terminé ![0m```")
             return
 
-@bot.command()
+@course.command(description=f"Ajoute une performance à votre profil. {prefix}course addPerf [distance](en km) [durée](en min) [date de la course](Format : Jour/Mois/Année) [vitesse moyenne](optionnel) [météo](optionnel) [lieu](optionnel)")
 async def addPerf(ctx, distance, duree, date_course, vitesse_moy=None, meteo=None, *, lieu=None):
     compte= await verif(ctx)
     if compte=="profil_ok":
@@ -148,8 +160,9 @@ async def addPerf(ctx, distance, duree, date_course, vitesse_moy=None, meteo=Non
             await ctx.send("```ansi\n[2;32mAjout de la performance réussi.[0m```")
         else:
             await ctx.send("```ansi\n[2;31mÉchec lors de l'ajout de la performance ![0m```")
+    
 
-@bot.command()
+@course.command(description=f"Liste vos performances. {prefix}course perfs")
 async def perfs(ctx):
     compte= await verif(ctx)
     if compte=="profil_ok":
@@ -176,30 +189,8 @@ async def perfs(ctx):
                 # ------------------------------
                 embed.add_field(name=perf[2], value=f"{perf[3]} km en {perf[4]} min{vitesse_moy}{lieu}{meteo}.", inline=False)
         await ctx.send(embed=embed)
-    
-@bot.command()
-async def objs(ctx):
-    compte= await verif(ctx)
-    if compte=="profil_ok":
-        objectifs = connection_list(f"select * from objectif where id_user={ctx.author.id} order by creation desc;")
-        embed = discord.Embed(title=f'Liste des objectifs de {ctx.author.name}')
-        if len(objectifs)==0:
-            embed.color = discord.Color.dark_orange()
-            embed.add_field(name=f"Vous n'avez pas d'objectif enregistré !", value="", inline=False)
-        else :
-            embed.color = discord.Color.dark_green()
-            for objectif in objectifs:
-                if objectif[3]==0:
-                    valid="Non validé."
-                else :
-                    date=""
-                    if objectif[4]!=None:
-                        date=f" le {objectif[4]}"
-                    valid=f"validé{date}."
-                embed.add_field(name=objectif[6], value=f"<{objectif[2]}> {valid}", inline=False)
-        await ctx.send(embed=embed)
 
-@bot.command()
+@course.command(description=f"Ajoute un objectif à votre profil et le défini comme actuel. {prefix}course addObj [nom]")
 async def addObj(ctx, *, nom):
     compte= await verif(ctx)
     if compte=="profil_ok":
@@ -245,7 +236,7 @@ async def addObj(ctx, *, nom):
                     
                     await ctx.send("```ansi\n[2;33mAjout d'un nouvel objectif...[0m```")
                     querys.append(f'insert into objectif (id_user, nom) values ({id}, "{nom}");')
-                    result=mult_insertion(querys)
+                    result=insertion(querys)
                     if result=="query_ok":
                         await ctx.send("```ansi\n[2;32mAjout du nouvel objectif réussi.[0m```")
                     else:
@@ -256,6 +247,28 @@ async def addObj(ctx, *, nom):
             except asyncio.TimeoutError:
                 await ctx.send(f"```ansi[2;34mLe temps imparti pour agir est terminé ![0m```")
                 return
+
+@course.command(description=f"Liste vos objectifs. {prefix}course objs")
+async def objs(ctx):
+    compte= await verif(ctx)
+    if compte=="profil_ok":
+        objectifs = connection_list(f"select * from objectif where id_user={ctx.author.id} order by creation desc;")
+        embed = discord.Embed(title=f'Liste des objectifs de {ctx.author.name}')
+        if len(objectifs)==0:
+            embed.color = discord.Color.dark_orange()
+            embed.add_field(name=f"Vous n'avez pas d'objectif enregistré !", value="", inline=False)
+        else :
+            embed.color = discord.Color.dark_green()
+            for objectif in objectifs:
+                if objectif[3]==0:
+                    valid="Non validé."
+                else :
+                    date=""
+                    if objectif[4]!=None:
+                        date=f" le {objectif[4]}"
+                    valid=f"validé{date}."
+                embed.add_field(name=objectif[6], value=f"<{objectif[2]}> {valid}", inline=False)
+        await ctx.send(embed=embed)
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
