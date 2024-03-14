@@ -1,44 +1,17 @@
-import discord, asyncio
+import discord, uuid, os, math, requests, time, asyncio
+import numpy as np
+from mtranslate import translate
+from bs4 import BeautifulSoup
 from discord.ext import commands
 from requetes_list import connection_list
 from insert import insertion
-from mult import mult_insertion
 from datetime import datetime
 
-prefix="<"
+prefix="!"
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
-
-# Initialisation de l'id de l'admin
-admin=385088777837871116
-
-
-
-# Événement de connexion
-@bot.event
-async def on_ready():
-    nom=bot.user.name
-    user = await bot.fetch_user(admin)
-    # Envoie un message privé à l'utilisateur
-    print(f"Bonjour Administrateur {user.name}, je suis connecté en tant que {nom} !")
-
-
-    
-@bot.command(description="Obtenir la liste des commandes utilisables.")
-async def help(ctx):
-    # Supprime le message contenant la commande utilisée
-    await ctx.message.delete()
-    # Création de l'embed pour afficher les informations
-    embed = discord.Embed(title="Commandes disponibles", color=discord.Color.gold())
-    # Récupère la liste de toutes les commandes disponibles
-    for command in bot.commands :
-        embed.add_field(name=prefix+command.name, value=command.description, inline=False)
-    # Envoie l'embed dans le canal où la commande a été lancée
-    await ctx.send(embed=embed)
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Créez un groupe de commandes nommé "Course"
 @bot.group(description="Liste toutes les commandes de Course.")
@@ -56,7 +29,7 @@ async def verif(ctx):
     embed = discord.Embed(title=f'Profil de {nom.name}', color=discord.Color.dark_orange())
     if len(user)==1:
         if user[0]!=nom.name:
-            result=insertion(f"update user set name='{nom.name}' where id_user={id};")
+            result=insertion([f"update user set name='{nom.name}' where id_user={id};"])
         return "profil_ok"
     else :
         embed.color = discord.Color.dark_orange()
@@ -69,7 +42,7 @@ async def verif(ctx):
             reponse = await ctx.bot.wait_for('message', timeout=60.0, check=check)
             if reponse.content.lower()=="y":
                 await ctx.send("```ansi\n[2;33mCréation en cours d'un profil...[0m```")
-                result=insertion(f"insert into user (id_user, name) values ({id}, {ctx.author.name});")
+                result=insertion([f"insert into user (id_user, name) values ({id}, '{nom.name}');"])
                 if result=="query_ok":
                     await ctx.send("```ansi\n[2;32mCréation du profil réussi.[0m```")
                     return "profil_ok"
@@ -81,15 +54,11 @@ async def verif(ctx):
 
 @course.command(description=f"Affiche votre profil ou vous en créer un. {prefix}course profil")
 async def profil(ctx):
-    id=ctx.author.id
-    query=f"select * from user where id_user={id};"
-    user = connection_list(query)
-    nom = await bot.fetch_user(id)
-    embed = discord.Embed(title=f'Profil de {nom.name}', color=discord.Color.dark_orange())
-    if len(user)==1:
-        if user[0][1]!=nom.name:
-            result=insertion(f"update user set name='{nom.name}' where id_user={id};")
-        embed.color = discord.Color.blurple()
+    compte= await verif(ctx)
+    if compte=="profil_ok":
+        id=ctx.author.id
+        nom = await bot.fetch_user(id)
+        embed = discord.Embed(title=f'Profil de {nom.name}', color=discord.Color.blurple())
         # -----------------------------------------------------------------------------------------
         query_objs=f"select * from objectif where id_user={id} and actuel=1;"
         objectif = connection_list(query_objs)
@@ -114,25 +83,6 @@ async def profil(ctx):
         embed.add_field(name=f'{perfs} performance{pluri} réalisée{pluri}', value=perf, inline=False)
         # -----------------------------------------------------------------------------------------
         await ctx.send(embed=embed)
-    else :
-        embed.color = discord.Color.dark_orange()
-        embed.add_field(name=f'Vous ne possedez pas de profil.', value=f"Voulez-vous en créer un ? (y/n)", inline=False)
-        await ctx.send(embed=embed)
-
-        def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel
-        try:
-            reponse = await ctx.bot.wait_for('message', timeout=60.0, check=check)
-            if reponse.content.lower()=="y":
-                await ctx.send("```ansi\n[2;33mCréation en cours d'un profil...[0m```")
-                result=insertion(f"insert into user (id_user, name) values ({id}, {nom.name});")
-                if result=="query_ok":
-                    await ctx.send("```ansi\n[2;32mCréation du profil réussi.[0m```")
-                else:
-                    await ctx.send("```ansi\n[2;31mÉchec lors de la création du profil ![0m```")
-        except asyncio.TimeoutError:
-            await ctx.send(f"```ansi[2;34mLe temps imparti pour agir est terminé ![0m```")
-            return
 
 @course.command(description=f"Ajoute une performance à votre profil. {prefix}course addPerf [distance](en km) [durée](en min) [date de la course](Format : Jour/Mois/Année) [vitesse moyenne](optionnel) [météo](optionnel) [lieu](optionnel)")
 async def addPerf(ctx, distance, duree, date_course, vitesse_moy=None, meteo=None, *, lieu=None):
@@ -154,8 +104,7 @@ async def addPerf(ctx, distance, duree, date_course, vitesse_moy=None, meteo=Non
                         info=new_date
                     val=f'"{info}"'
                 options_val+=f",{val}"
-        query=f"insert into perf (id_user,distance,duree{options_set}) values ({ctx.author.id},{distance},{duree}{options_val});"
-        result=insertion(query)
+        result=insertion([f"insert into perf (id_user,distance,duree{options_set}) values ({ctx.author.id},{distance},{duree}{options_val});"])
         if result=="query_ok":
             await ctx.send("```ansi\n[2;32mAjout de la performance réussi.[0m```")
         else:
@@ -275,4 +224,4 @@ async def objs(ctx):
 
 
 # Exécution du bot avec le jeton Discord
-bot.run('MTIwNjg3NTI2Njk2NjYyNjMxNA.Gs5uKl.fS1nKQwRMv6zDLqEd7J4jL5zIESpHSNHNSdwT8')
+bot.run('')
