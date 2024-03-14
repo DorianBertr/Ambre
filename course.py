@@ -236,9 +236,10 @@ async def addObj(ctx, *, nom):
                                 query_1+=f" date_valid='{new_date}',"
                             else:
                                 await ctx.send("```ansi\n[2;31mRéponse incorrecte ![0m```")
+                                exit()
                         except asyncio.TimeoutError:
                             await ctx.send(f"```ansi[2;34mLe temps imparti pour agir est terminé ![0m```")
-                            return
+                            exit()
                     query_1+=f" actuel=0 where actuel=1 and id_user={id};"
                     querys.append(query_1)
                     
