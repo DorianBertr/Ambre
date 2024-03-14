@@ -2,7 +2,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from infos import valeurs
 
-def insertion(query):
+def insertion(querys):
     try:
         bdd = mysql.connector.connect(user=valeurs()[0], password=valeurs()[1], host=valeurs()[2], database=valeurs()[3])
 
@@ -25,7 +25,8 @@ def insertion(query):
         if bdd and bdd.is_connected():
             curseur=bdd.cursor()
             try:
-                curseur.execute(query)
+                for query in querys:
+                    curseur.execute(query)
                 bdd.commit()
                 bdd.close()
                 fin = "query_ok"
